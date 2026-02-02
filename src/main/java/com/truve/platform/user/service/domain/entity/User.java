@@ -23,8 +23,6 @@ public class User extends BaseEntity {
 	private String email;
 	private String password;
 
-	private boolean verified;
-
 	@Enumerated(EnumType.STRING)
 	private AuthProvider provider;
 
@@ -34,12 +32,8 @@ public class User extends BaseEntity {
 	public User(String email, String password, AuthProvider provider, UserRole role) {
 		this.email = email;
 		this.password = password;
-		this.verified = false;
 		this.provider = provider;
 		this.role = role;
 	}
 
-	public void verifyEmail() {
-		this.verified = true;
-	}
 }
