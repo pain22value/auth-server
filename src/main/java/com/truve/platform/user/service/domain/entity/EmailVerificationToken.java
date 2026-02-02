@@ -17,11 +17,20 @@ public class EmailVerificationToken extends BaseEntity {
 
 	@Column(nullable = false, unique = true)
 	private String email;
-	private String token;
+	private String code;
+	private boolean isVerified;
 
-	public EmailVerificationToken(String email, String token) {
+	private EmailVerificationToken(String email, String code) {
 		this.email = email;
-		this.token = token;
+		this.code = code;
+		isVerified = false;
 	}
 
+	public static EmailVerificationToken create(String email, String code) {
+		return new EmailVerificationToken(email, code);
+	}
+
+	public void verifyEmail() {
+		this.isVerified = true;
+	}
 }

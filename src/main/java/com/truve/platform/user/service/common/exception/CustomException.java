@@ -1,4 +1,4 @@
-package com.truve.platform.auth.service.common.exception;
+package com.truve.platform.user.service.common.exception;
 
 import lombok.Getter;
 
