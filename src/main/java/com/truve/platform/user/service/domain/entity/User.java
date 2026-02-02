@@ -1,4 +1,4 @@
-package com.truve.platform.user.service.domain.repository;
+package com.truve.platform.user.service.domain.entity;
 
 import com.truve.platform.user.service.common.constants.AuthProvider;
 import com.truve.platform.user.service.common.constants.UserRole;
@@ -30,4 +30,16 @@ public class User extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
+
+	public User(String email, String password, AuthProvider provider, UserRole role) {
+		this.email = email;
+		this.password = password;
+		this.verified = false;
+		this.provider = provider;
+		this.role = role;
+	}
+
+	public void verifyEmail() {
+		this.verified = true;
+	}
 }
