@@ -1,4 +1,4 @@
-package com.truve.platform.auth.service.common.constants;
+package com.truve.platform.user.service.common.constants;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.truve.platform.auth.service.common.response;
+package com.truve.platform.user.service.common.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

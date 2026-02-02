@@ -1,4 +1,4 @@
-package com.truve.platform.auth.service.common.exception;
+package com.truve.platform.user.service.common.exception;
 
 import java.util.Arrays;
 
@@ -9,7 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.truve.platform.auth.service.common.response.ErrorResponse;
+import com.truve.platform.user.service.common.response.ErrorResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

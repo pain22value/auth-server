@@ -1,4 +1,4 @@
-package com.truve.platform.auth.service.common.support;
+package com.truve.platform.user.service.common.support;
 
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

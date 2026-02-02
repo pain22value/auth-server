@@ -1,4 +1,4 @@
-package com.truve.platform.auth.service.common.response;
+package com.truve.platform.user.service.common.response;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
