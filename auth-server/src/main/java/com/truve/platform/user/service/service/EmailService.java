@@ -3,13 +3,12 @@ package com.truve.platform.user.service.service;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.truve.platform.user.service.common.exception.CustomException;
-import com.truve.platform.user.service.common.exception.ErrorCode;
-import com.truve.platform.user.service.common.support.Preconditions;
-import com.truve.platform.user.service.common.support.VerificationCodeGenerateUtils;
+import com.truve.platform.common.exception.CustomException;
+import com.truve.platform.common.exception.ErrorCode;
+import com.truve.platform.common.support.Preconditions;
+import com.truve.platform.common.support.VerificationCodeGenerateUtils;
 import com.truve.platform.user.service.domain.entity.EmailVerificationToken;
 import com.truve.platform.user.service.repository.EmailVerificationRepository;
 import com.truve.platform.user.service.repository.UserRepository;

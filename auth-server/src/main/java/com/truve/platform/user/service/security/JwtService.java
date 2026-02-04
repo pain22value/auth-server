@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
-import com.truve.platform.user.service.common.constants.UserRole;
+import com.truve.platform.common.constants.UserRole;
 
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
@@ -57,7 +57,6 @@ public class JwtService {
 			.getPayload()
 			.getSubject();
 	}
-
 
 	// public Role parseRole(String token) {
 	// 	String role = Jwts

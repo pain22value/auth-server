@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.truve.platform.user.service.common.response.ApiResult;
+import com.truve.platform.common.response.ApiResult;
 import com.truve.platform.user.service.domain.dto.request.AuthRequest;
 import com.truve.platform.user.service.domain.dto.response.AuthResponse;
 import com.truve.platform.user.service.service.AuthService;
