@@ -1,6 +1,6 @@
 package com.truve.platform.user.service.domain.entity;
 
-import com.truve.platform.user.service.common.support.BaseEntity;
+import com.truve.platform.common.support.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

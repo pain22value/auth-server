@@ -1,17 +1,15 @@
 package com.truve.platform.user.service.service;
 
-import java.util.UUID;
-
 import org.springframework.data.util.Pair;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.truve.platform.user.service.common.constants.AuthProvider;
-import com.truve.platform.user.service.common.constants.UserRole;
-import com.truve.platform.user.service.common.exception.CustomException;
-import com.truve.platform.user.service.common.exception.ErrorCode;
-import com.truve.platform.user.service.common.support.Preconditions;
+import com.truve.platform.common.constants.AuthProvider;
+import com.truve.platform.common.constants.UserRole;
+import com.truve.platform.common.exception.CustomException;
+import com.truve.platform.common.exception.ErrorCode;
+import com.truve.platform.common.support.Preconditions;
 import com.truve.platform.user.service.domain.entity.User;
 import com.truve.platform.user.service.repository.EmailVerificationRepository;
 import com.truve.platform.user.service.repository.UserRepository;
@@ -43,7 +41,8 @@ public class AuthService {
 
 		String accessToken = jwtService.issue(user.getEmail(), user.getRole(), accessExp, TokenType.ACCESS_TOKEN.getType());
 
-		String refreshToken = jwtService.issue(user.getEmail(), user.getRole(), refreshExp, TokenType.REFRESH_TOKEN.getType());
+		String refreshToken = jwtService.issue(user.getEmail(), user.getRole(), refreshExp,
+			TokenType.REFRESH_TOKEN.getType());
 
 		long refreshTtlMs = refreshExp.getTime() - System.currentTimeMillis();
 		refreshTokenService.save(user.getId(), refreshToken, refreshTtlMs);
@@ -57,7 +56,7 @@ public class AuthService {
 
 		try {
 			email = jwtService.parseEmail(refreshToken);
-		}	 catch (JwtException | IllegalArgumentException e) {
+		} catch (JwtException | IllegalArgumentException e) {
 			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
 		}
 
@@ -65,9 +64,11 @@ public class AuthService {
 		var newAccessExp = jwtService.getAccessExpiration();
 		var newRefreshExp = jwtService.getRefreshExpiration();
 
-		String newAccessToken = jwtService.issue(user.getEmail(), user.getRole(), newAccessExp, TokenType.ACCESS_TOKEN.getType());
+		String newAccessToken = jwtService.issue(user.getEmail(), user.getRole(), newAccessExp,
+			TokenType.ACCESS_TOKEN.getType());
 
-		String newRefreshToken = jwtService.issue(user.getEmail(), user.getRole(), newRefreshExp, TokenType.REFRESH_TOKEN.getType());
+		String newRefreshToken = jwtService.issue(user.getEmail(), user.getRole(), newRefreshExp,
+			TokenType.REFRESH_TOKEN.getType());
 
 		long newRefreshTtlMs = newRefreshExp.getTime() - System.currentTimeMillis();
 		refreshTokenService.save(user.getId(), newRefreshToken, newRefreshTtlMs);

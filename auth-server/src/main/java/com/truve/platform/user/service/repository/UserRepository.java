@@ -4,8 +4,8 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.truve.platform.user.service.common.exception.CustomException;
-import com.truve.platform.user.service.common.exception.ErrorCode;
+import com.truve.platform.common.exception.CustomException;
+import com.truve.platform.common.exception.ErrorCode;
 import com.truve.platform.user.service.domain.entity.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
