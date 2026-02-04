@@ -3,6 +3,8 @@ package com.truve.platform.user.service.service;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.truve.platform.user.service.common.exception.CustomException;
 import com.truve.platform.user.service.common.exception.ErrorCode;
@@ -30,8 +32,9 @@ public class EmailService {
 	// TODO: 환경변수 분리
 	private final static String SENDER_EMAIL = "kimdohyun032@gmail.com";
 
+	@Transactional
 	public void sendMail(String email) {
-		Preconditions.validate(userRepository.existsByEmail(email), ErrorCode.ALREADY_EXISTS_EMAIL);
+		Preconditions.validate(!userRepository.existsByEmail(email), ErrorCode.ALREADY_EXISTS_EMAIL);
 
 		String code = verificationCodeGenerateUtils.generateVerificationCode();
 
@@ -39,6 +42,8 @@ public class EmailService {
 			email,
 			code
 		);
+
+		emailVerificationRepository.save(emailVerificationToken);
 
 		String subject = "TRUVE 회원가입 인증 코드";
 		String text = String.format(
@@ -66,16 +71,15 @@ public class EmailService {
 		}
 	}
 
+	@Transactional
 	public void verifyEmail(String email, String code) {
 
 		EmailVerificationToken token = emailVerificationRepository.findByEmailOrThrow(email);
 
-		if (token.isVerified()) {
-			throw new CustomException(ErrorCode.ALREADY_VERIFIED_EMAIL);
-		}
-		if (!token.getCode().equals(code)) {
-			throw new CustomException(ErrorCode.NOT_CORRECT_EMAIL_CODE);
-		}
+		Preconditions.validate(!token.isVerified(), ErrorCode.ALREADY_EXISTS_EMAIL);
+
+		Preconditions.validate(token.getCode().equals(code), ErrorCode.NOT_CORRECT_EMAIL_CODE);
+
 		token.verifyEmail();
 	}
 }
