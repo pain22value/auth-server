@@ -1,4 +1,4 @@
-package com.truve.platform.user.service.domain.dto;
+package com.truve.platform.user.service.domain.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -29,11 +29,15 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
 
-	public User(String email, String password, AuthProvider provider, UserRole role) {
+	private User(String email, String password, AuthProvider provider, UserRole role) {
 		this.email = email;
 		this.password = password;
 		this.provider = provider;
 		this.role = role;
+	}
+
+	public static User create(String email, String password, AuthProvider provider, UserRole role) {
+		return new User(email, password, provider, role);
 	}
 
 }
