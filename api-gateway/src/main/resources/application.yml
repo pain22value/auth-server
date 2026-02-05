@@ -1,0 +1,25 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: auth-jwt
+              uri: http://localhost:8081
+              predicates:
+                - Path=/api/auth/logout
+              filters:
+                - JwtAuthenticationFilter
+            - id: auth
+              uri: http://localhost:8081
+              predicates:
+                - Path=/api/auth/**
+
+
+jwt:
+  secret: ${kt.jwt.secret:kt-cloud-tech-up-final-project-2026020201010101}
+  access-token-expiration: ${kt.jwt.access-token-expiration:300000} # 5
+  refresh-token-expiration: ${kt.jwt.refresh-token-expiration:43200000} # 12

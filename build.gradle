@@ -36,21 +36,7 @@ subprojects {
         compileOnly 'org.projectlombok:lombok'
         annotationProcessor 'org.projectlombok:lombok'
 
-        // [Core]
-        api 'org.springframework.boot:spring-boot-starter-web'
-        api 'org.springframework.boot:spring-boot-starter-validation'
-        testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-        // [DB - JPA, MySQL, Redis]
-        api 'org.springframework.boot:spring-boot-starter-data-jpa'
-        testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-        api 'com.mysql:mysql-connector-j'
-        implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-        testImplementation 'org.springframework.boot:spring-boot-starter-data-redis-test'
-
-        // [Mail]
-        implementation 'org.springframework.boot:spring-boot-starter-mail'
     }
 
     tasks.named('test') {

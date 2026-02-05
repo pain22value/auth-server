@@ -39,9 +39,9 @@ public class AuthService {
 		var accessExp = jwtService.getAccessExpiration();
 		var refreshExp = jwtService.getRefreshExpiration();
 
-		String accessToken = jwtService.issue(user.getEmail(), user.getRole(), accessExp, TokenType.ACCESS_TOKEN.getType());
+		String accessToken = jwtService.issue(user.getId(), user.getEmail(), user.getRole(), accessExp, TokenType.ACCESS_TOKEN.getType());
 
-		String refreshToken = jwtService.issue(user.getEmail(), user.getRole(), refreshExp,
+		String refreshToken = jwtService.issue(user.getId(), user.getEmail(), user.getRole(), refreshExp,
 			TokenType.REFRESH_TOKEN.getType());
 
 		long refreshTtlMs = refreshExp.getTime() - System.currentTimeMillis();
@@ -64,10 +64,10 @@ public class AuthService {
 		var newAccessExp = jwtService.getAccessExpiration();
 		var newRefreshExp = jwtService.getRefreshExpiration();
 
-		String newAccessToken = jwtService.issue(user.getEmail(), user.getRole(), newAccessExp,
+		String newAccessToken = jwtService.issue(user.getId(), user.getEmail(), user.getRole(), newAccessExp,
 			TokenType.ACCESS_TOKEN.getType());
 
-		String newRefreshToken = jwtService.issue(user.getEmail(), user.getRole(), newRefreshExp,
+		String newRefreshToken = jwtService.issue(user.getId(), user.getEmail(), user.getRole(), newRefreshExp,
 			TokenType.REFRESH_TOKEN.getType());
 
 		long newRefreshTtlMs = newRefreshExp.getTime() - System.currentTimeMillis();
