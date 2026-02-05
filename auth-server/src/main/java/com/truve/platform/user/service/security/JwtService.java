@@ -16,10 +16,11 @@ public class JwtService {
 
 	private final JwtProperties jwtProperties;
 
-	public String issue(String email, UserRole role, Date expiration, String tokenType) {
+	public String issue(Long userId, String email, UserRole role, Date expiration, String tokenType) {
 		return Jwts.builder()
 			.issuer("truve-api")
-			.subject(email)
+			.subject(userId.toString())
+			.claim("email", email)
 			.claim("role", role.name())
 			.claim("token_type", tokenType)
 			.id(UUID.randomUUID().toString())
