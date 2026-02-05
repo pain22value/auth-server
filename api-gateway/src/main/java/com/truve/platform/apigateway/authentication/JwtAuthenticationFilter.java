@@ -26,14 +26,12 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory {
 				.getHeaders()
 				.getFirst("Authorization");
 
-			if (token == null) {
+			if (token == null || !token.startsWith("Bearer ")) {
 				exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
 				return exchange.getResponse().setComplete();
 			}
 
-			if (token != null && token.startsWith("Bearer ")) {
-				token = token.substring(7);
-			}
+			token = token.substring(7);
 
 			SecretKey secretKey = jwtProperties.getSecretKey();
 			Claims claims = Jwts.parser()
