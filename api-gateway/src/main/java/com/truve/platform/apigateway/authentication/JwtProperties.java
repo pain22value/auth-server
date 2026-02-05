@@ -20,7 +20,7 @@ public class JwtProperties {
 		return new Date(new Date().getTime() + accessTokenExpiration);
 	}
 
-	public Date refreshTokenExpiration() {
+	public Date getRefreshTokenExpiration() {
 		return new Date(new Date().getTime() + refreshTokenExpiration);
 	}
 
