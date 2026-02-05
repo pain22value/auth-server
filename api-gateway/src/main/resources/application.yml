@@ -10,13 +10,13 @@ spring:
             - id: auth-jwt
               uri: http://localhost:8081
               predicates:
-                - Path=/auth/logout
+                - Path=/api/auth/logout
               filters:
                 - JwtAuthenticationFilter
             - id: auth
               uri: http://localhost:8081
               predicates:
-                - Path=/auth/**
+                - Path=/api/auth/**
 
 
 jwt:
