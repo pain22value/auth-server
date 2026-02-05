@@ -18,7 +18,12 @@ public enum ErrorCode {
 	ALREADY_VERIFIED_EMAIL(HttpStatus.BAD_REQUEST, "이미 인증된 이메일입니다."),
 	INVALID_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, "리프레시 토큰이 올바르지 않습니다."),
 
-	;
+	NOT_ENOUGH_CANCELABLE_AMOUNT(HttpStatus.BAD_REQUEST, "취소 가능 잔액이 부족합니다."),
+	ALREADY_CANCELED_PAYMENT(HttpStatus.BAD_REQUEST, "이미 전액 취소된 결제입니다."),
+	CANNOT_CANCEL_PAYMENT(HttpStatus.BAD_REQUEST, "취소 가능한 상태의 결제가 아닙니다."),
+	INVALID_CANCEL_AMOUNT(HttpStatus.BAD_REQUEST, "유효하지 않은 취소 금액입니다."),
+	INVALID_PAYMENT_STATUS(HttpStatus.BAD_REQUEST, "유효하지 않은 결제 방식입니다."),
+	INVALID_PAYMENT_KEY(HttpStatus.BAD_REQUEST, "유효하지 않은 결제 키입니다.");
 
 	private final HttpStatus status;
 	private final String message;
