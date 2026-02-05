@@ -13,11 +13,11 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/email")
+@RequestMapping("/api/auth/email")
 public class EmailController {
 	private final EmailService emailService;
 
-	@PostMapping
+	@PostMapping("/send-code")
 	public ApiResult<Void> sendMail(
 		@RequestBody EmailRequest.SendVerificationCode request
 	) {
