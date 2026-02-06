@@ -20,16 +20,36 @@ class PaymentTest {
 	private static final String DEFAULT_ORDER_ID = "ORDER-123";
 	private static final Long DEFAULT_AMOUNT = 10000L;
 	private static final PaymentMethod DEFAULT_PAYMENT_METHOD = PaymentMethod.CARD;
+	private static final String DEFAULT_PAYMENT_KEY = "테스트 결제 키";
+	private static final String DEFAULT_CANCEL_REASON = "테스트 결제 취소 사유";
 
-	public Payment createDefaultPayment() {
+	private Payment createDefaultPayment() {
 		return new Payment(DEFAULT_ORDER_ID, DEFAULT_AMOUNT, DEFAULT_PAYMENT_METHOD);
+	}
+
+	private Payment createPaymentWithStatus(PaymentStatus status) {
+		Payment payment = createDefaultPayment();
+		ReflectionTestUtils.setField(payment, "status", status);
+		return payment;
+	}
+
+	private Payment createWaitPayment() {
+		Payment payment = createDefaultPayment();
+		payment.waitDeposit(DEFAULT_PAYMENT_KEY);
+		return payment;
+	}
+
+	private Payment createCompletePayment() {
+		Payment payment = createDefaultPayment();
+		payment.complete(DEFAULT_PAYMENT_KEY);
+		return payment;
 	}
 
 	@Test
 	@DisplayName("결제 생성")
 	void 결제_생성() {
 		// given & when
-		Payment payment = createDefaultPayment();
+		Payment payment = new Payment(DEFAULT_ORDER_ID, DEFAULT_AMOUNT, DEFAULT_PAYMENT_METHOD);
 
 		// then
 		assertAll(
@@ -47,14 +67,13 @@ class PaymentTest {
 		void 입금대기_전환_성공() {
 			// given
 			Payment payment = createDefaultPayment();
-			String paymentKey = "테스트 결제 키";
 
 			// when
-			payment.waitDeposit(paymentKey);
+			payment.waitDeposit(DEFAULT_PAYMENT_KEY);
 
 			// then
 			assertAll(
-				() -> assertThat(payment.getPaymentKey()).isEqualTo(paymentKey),
+				() -> assertThat(payment.getPaymentKey()).isEqualTo(DEFAULT_PAYMENT_KEY),
 				() -> assertThat(payment.getStatus()).isEqualTo(PaymentStatus.WAITING_FOR_DEPOSIT)
 			);
 		}
@@ -67,11 +86,10 @@ class PaymentTest {
 		)
 		void 입금대기_전환_실패_유효하지_않은_상태(PaymentStatus status) {
 			// given
-			Payment payment = createDefaultPayment();
-			ReflectionTestUtils.setField(payment, "status", status);
+			Payment payment = createPaymentWithStatus(status);
 
 			// when & then
-			assertThatThrownBy(() -> payment.waitDeposit("테스트 결제 키"))
+			assertThatThrownBy(() -> payment.waitDeposit(DEFAULT_PAYMENT_KEY))
 				.isInstanceOf(CustomException.class)
 				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_PAYMENT_STATUS);
 		}
@@ -85,8 +103,7 @@ class PaymentTest {
 		@DisplayName("입금대기 상태에서 입금 시간이 만료되면 만료 상태로 변경되고 취소 가능 금액을 0으로 변경한다.")
 		void 만료_전환_성공() {
 			// given
-			Payment payment = createDefaultPayment();
-			payment.waitDeposit("테스트 결제 키");
+			Payment payment = createWaitPayment();
 
 			// when
 			payment.expire();
@@ -106,8 +123,7 @@ class PaymentTest {
 		)
 		void 만료_전환_실패_유효하지_않은_상태(PaymentStatus status) {
 			// given
-			Payment payment = createDefaultPayment();
-			ReflectionTestUtils.setField(payment, "status", status);
+			Payment payment = createPaymentWithStatus(status);
 
 			// when & then
 			assertThatThrownBy(payment::expire)
@@ -129,14 +145,13 @@ class PaymentTest {
 			void 완료_전환_성공_준비상태() {
 				// given
 				Payment payment = createDefaultPayment();
-				String paymentKey = "테스트 결제 키";
 
 				// when
-				payment.complete(paymentKey);
+				payment.complete(DEFAULT_PAYMENT_KEY);
 
 				// then
 				assertAll(
-					() -> assertThat(payment.getPaymentKey()).isEqualTo(paymentKey),
+					() -> assertThat(payment.getPaymentKey()).isEqualTo(DEFAULT_PAYMENT_KEY),
 					() -> assertThat(payment.getStatus()).isEqualTo(PaymentStatus.DONE)
 				);
 			}
@@ -146,15 +161,14 @@ class PaymentTest {
 			void 완료_전환_성공_입금대기상태() {
 				// given
 				Payment payment = createDefaultPayment();
-				String paymentKey = "테스트 결제 키";
-				payment.waitDeposit(paymentKey);
+				payment.waitDeposit(DEFAULT_PAYMENT_KEY);
 
 				// when
-				payment.complete(paymentKey);
+				payment.complete(DEFAULT_PAYMENT_KEY);
 
 				// then
 				assertAll(
-					() -> assertThat(payment.getPaymentKey()).isEqualTo(paymentKey),
+					() -> assertThat(payment.getPaymentKey()).isEqualTo(DEFAULT_PAYMENT_KEY),
 					() -> assertThat(payment.getStatus()).isEqualTo(PaymentStatus.DONE)
 				);
 			}
@@ -173,11 +187,10 @@ class PaymentTest {
 			)
 			void 완료_전환_실패_유효하지_않은_상태(PaymentStatus status) {
 				// given
-				Payment payment = createDefaultPayment();
-				ReflectionTestUtils.setField(payment, "status", status);
+				Payment payment = createPaymentWithStatus(status);
 
 				// when & then
-				assertThatThrownBy(payment::expire)
+				assertThatThrownBy(() -> payment.complete(DEFAULT_PAYMENT_KEY))
 					.isInstanceOf(CustomException.class)
 					.hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_PAYMENT_STATUS);
 			}
@@ -187,10 +200,10 @@ class PaymentTest {
 			void 완료_전환_실패_유효하지_않은_결제키() {
 				// given
 				Payment payment = createDefaultPayment();
-				payment.waitDeposit("테스트 결제 키1");
+				payment.waitDeposit(DEFAULT_PAYMENT_KEY);
 
 				// when & then
-				assertThatThrownBy(() -> payment.complete("테스트 결제 키2"))
+				assertThatThrownBy(() -> payment.complete("임의의 결제 키"))
 					.isInstanceOf(CustomException.class)
 					.hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_PAYMENT_KEY);
 			}
@@ -328,11 +341,10 @@ class PaymentTest {
 			)
 			void 결제취소_실패_유효하지_않은_상태(PaymentStatus status) {
 				// given
-				Payment payment = createDefaultPayment();
-				ReflectionTestUtils.setField(payment, "status", status);
+				Payment payment = createPaymentWithStatus(status);
 
 				// when & then
-				assertThatThrownBy(() -> payment.applyCancel(DEFAULT_AMOUNT, "테스트 취소 사유", CancelType.FULL))
+				assertThatThrownBy(() -> payment.applyCancel(DEFAULT_AMOUNT, DEFAULT_CANCEL_REASON, CancelType.FULL))
 					.isInstanceOf(CustomException.class)
 					.hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_PAYMENT_STATUS);
 			}
@@ -341,11 +353,10 @@ class PaymentTest {
 			@DisplayName("입금대기 상태일 때는 부분 환불 처리할 수 없다.")
 			void 결제취소_실패_입금대기_부분환불() {
 				// given
-				Payment payment = createDefaultPayment();
-				payment.waitDeposit("테스트 결제 키");
+				Payment payment = createWaitPayment();
 
 				// when & then
-				assertThatThrownBy(() -> payment.applyCancel(6000L, "테스트 취소 사유", CancelType.PARTIAL))
+				assertThatThrownBy(() -> payment.applyCancel(6000L, DEFAULT_CANCEL_REASON, CancelType.PARTIAL))
 					.isInstanceOf(CustomException.class)
 					.hasFieldOrPropertyWithValue("errorCode", ErrorCode.MUST_CANCEL_FULL);
 			}
@@ -354,12 +365,11 @@ class PaymentTest {
 			@DisplayName("취소 금액이 0보다 작으면 결제를 취소할 수 없다.")
 			void 결제취소_실패_유효하지_않은_취소금액() {
 				// given
-				Payment payment = createDefaultPayment();
+				Payment payment = createCompletePayment();
 				Long cancelAmount = -1000L;
-				payment.complete("테스트 결제 키");
 
 				// when & then
-				assertThatThrownBy(() -> payment.applyCancel(cancelAmount, "테스트 취소 사유", CancelType.PARTIAL))
+				assertThatThrownBy(() -> payment.applyCancel(cancelAmount, DEFAULT_CANCEL_REASON, CancelType.PARTIAL))
 					.isInstanceOf(CustomException.class)
 					.hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_CANCEL_AMOUNT);
 			}
@@ -368,12 +378,11 @@ class PaymentTest {
 			@DisplayName("취소 금액이 취소 가능 금액보다 크면 결제를 취소할 수 없다.")
 			void 결제취소_실패_충분하지_않은_취소가능금액() {
 				// given
-				Payment payment = createDefaultPayment();
+				Payment payment = createCompletePayment();
 				Long cancelAmount = 100000000L;
-				payment.complete("테스트 결제 키");
 
 				// when & then
-				assertThatThrownBy(() -> payment.applyCancel(cancelAmount, "테스트 취소 사유", CancelType.PARTIAL))
+				assertThatThrownBy(() -> payment.applyCancel(cancelAmount, DEFAULT_CANCEL_REASON, CancelType.PARTIAL))
 					.isInstanceOf(CustomException.class)
 					.hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_ENOUGH_CANCELABLE_AMOUNT);
 			}
@@ -382,11 +391,10 @@ class PaymentTest {
 			@DisplayName("전액 환불일 때는 결제 총액과 취소 가능 금액과 취소 금액이 일치해야 한다.")
 			void 결제취소_실패_전액환불_금액_불일치() {
 				// given
-				Payment payment = createDefaultPayment();
-				payment.complete("테스트 결제 키");
+				Payment payment = createCompletePayment();
 
 				// when & then
-				assertThatThrownBy(() -> payment.applyCancel(5000L, "테스트 취소 사유", CancelType.FULL))
+				assertThatThrownBy(() -> payment.applyCancel(5000L, DEFAULT_CANCEL_REASON, CancelType.FULL))
 					.isInstanceOf(CustomException.class)
 					.hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_CANCEL_AMOUNT);
 			}
