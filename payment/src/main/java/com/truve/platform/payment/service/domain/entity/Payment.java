@@ -91,23 +91,25 @@ public class Payment extends BaseEntity {
 	}
 
 	public void applyCancel(Long cancelAmount, String reason, CancelType type) {
-		if (status == PaymentStatus.WAITING_FOR_DEPOSIT) {
-			processWaitingCancel();
-		} else {
-			validateCancelStatus();
-			validateCancelAmount(cancelAmount);
-			processCancel(cancelAmount);
+		validateCancelStatus();
+		validateCancelPolicy(type);
+		validateCancelAmount(cancelAmount, type);
+
+		if (status.isCancelable()) {
+			processCancel();
+		} else if (status.isRefundable()) {
+			processRefund(cancelAmount);
 		}
 
 		this.cancels.add(new PaymentCancel(this, cancelAmount, reason, type));
 	}
 
-	private void processWaitingCancel() {
+	private void processCancel() {
 		this.cancelableAmount = 0L;
 		this.status = PaymentStatus.CANCELED;
 	}
 
-	private void processCancel(Long cancelAmount) {
+	private void processRefund(Long cancelAmount) {
 		this.cancelableAmount -= cancelAmount;
 		this.status = (this.cancelableAmount == 0) ? PaymentStatus.REFUNDED : PaymentStatus.PARTIAL_REFUNDED;
 	}
@@ -132,18 +134,22 @@ public class Payment extends BaseEntity {
 	}
 
 	private void validateCancelStatus() {
-		Preconditions.validate(status != PaymentStatus.REFUNDED && status != PaymentStatus.CANCELED,
-			ErrorCode.ALREADY_CANCELED_PAYMENT);
-		// TODO canCancel Status 묶기 -> Test 코드도 업데이트
-		Preconditions.validate(status == PaymentStatus.DONE || status == PaymentStatus.PARTIAL_REFUNDED
-				|| status == PaymentStatus.WAITING_FOR_DEPOSIT,
-			ErrorCode.CANNOT_CANCEL_PAYMENT);
-
+		Preconditions.validate(status.isCancelable() || status.isRefundable(), ErrorCode.INVALID_PAYMENT_STATUS);
 	}
 
-	private void validateCancelAmount(Long cancelAmount) {
+	private void validateCancelPolicy(CancelType type) {
+		if (status.isCancelable()) {
+			Preconditions.validate(type == CancelType.FULL, ErrorCode.MUST_CANCEL_FULL);
+		}
+	}
+
+	private void validateCancelAmount(Long cancelAmount, CancelType type) {
 		Preconditions.validate(cancelAmount > 0, ErrorCode.INVALID_CANCEL_AMOUNT);
 		Preconditions.validate(cancelAmount <= cancelableAmount, ErrorCode.NOT_ENOUGH_CANCELABLE_AMOUNT);
-	}
 
+		if (type == CancelType.FULL) {
+			Preconditions.validate(cancelAmount.equals(amount), ErrorCode.INVALID_CANCEL_AMOUNT);
+			Preconditions.validate(cancelAmount.equals(cancelableAmount), ErrorCode.INVALID_CANCEL_AMOUNT);
+		}
+	}
 }

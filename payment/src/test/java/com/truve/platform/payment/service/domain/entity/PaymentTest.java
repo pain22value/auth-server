@@ -320,29 +320,13 @@ class PaymentTest {
 		@DisplayName("결제 취소 실패 케이스")
 		class FailureCases {
 
-			@ParameterizedTest(name = "이미 전액 환불 상태거나 취소 상태일 때는 결제를 취소할 수 없다.")
+			@ParameterizedTest(name = "{0} 상태일 때는 결제를 취소할 수 없다.")
 			@EnumSource(
 				value = PaymentStatus.class,
-				names = {"REFUNDED", "CANCELED"}
-			)
-			void 결제취소_실패_이미_취소된_결제(PaymentStatus status) {
-				// given
-				Payment payment = createDefaultPayment();
-				ReflectionTestUtils.setField(payment, "status", status);
-
-				// when & then
-				assertThatThrownBy(() -> payment.applyCancel(DEFAULT_AMOUNT, "테스트 취소 사유", CancelType.FULL))
-					.isInstanceOf(CustomException.class)
-					.hasFieldOrPropertyWithValue("errorCode", ErrorCode.ALREADY_CANCELED_PAYMENT);
-			}
-
-			@ParameterizedTest(name = "입금대기, 완료, 부분환불 상태 외엔 결제 취소를 할 수 없다.")
-			@EnumSource(
-				value = PaymentStatus.class,
-				names = {"REFUNDED", "CANCELED", "WAITING_FOR_DEPOSIT", "DONE", "PARTIAL_REFUNDED"},
+				names = {"READY", "WAITING_FOR_DEPOSIT", "DONE", "PARTIAL_REFUNDED"},
 				mode = EnumSource.Mode.EXCLUDE
 			)
-			void 결제취소_실패_유효하지_않은_결제방식(PaymentStatus status) {
+			void 결제취소_실패_유효하지_않은_상태(PaymentStatus status) {
 				// given
 				Payment payment = createDefaultPayment();
 				ReflectionTestUtils.setField(payment, "status", status);
@@ -350,7 +334,20 @@ class PaymentTest {
 				// when & then
 				assertThatThrownBy(() -> payment.applyCancel(DEFAULT_AMOUNT, "테스트 취소 사유", CancelType.FULL))
 					.isInstanceOf(CustomException.class)
-					.hasFieldOrPropertyWithValue("errorCode", ErrorCode.CANNOT_CANCEL_PAYMENT);
+					.hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_PAYMENT_STATUS);
+			}
+
+			@Test
+			@DisplayName("입금대기 상태일 때는 부분 환불 처리할 수 없다.")
+			void 결제취소_실패_입금대기_부분환불() {
+				// given
+				Payment payment = createDefaultPayment();
+				payment.waitDeposit("테스트 결제 키");
+
+				// when & then
+				assertThatThrownBy(() -> payment.applyCancel(6000L, "테스트 취소 사유", CancelType.PARTIAL))
+					.isInstanceOf(CustomException.class)
+					.hasFieldOrPropertyWithValue("errorCode", ErrorCode.MUST_CANCEL_FULL);
 			}
 
 			@Test
@@ -379,6 +376,19 @@ class PaymentTest {
 				assertThatThrownBy(() -> payment.applyCancel(cancelAmount, "테스트 취소 사유", CancelType.PARTIAL))
 					.isInstanceOf(CustomException.class)
 					.hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_ENOUGH_CANCELABLE_AMOUNT);
+			}
+
+			@Test
+			@DisplayName("전액 환불일 때는 결제 총액과 취소 가능 금액과 취소 금액이 일치해야 한다.")
+			void 결제취소_실패_전액환불_금액_불일치() {
+				// given
+				Payment payment = createDefaultPayment();
+				payment.complete("테스트 결제 키");
+
+				// when & then
+				assertThatThrownBy(() -> payment.applyCancel(5000L, "테스트 취소 사유", CancelType.FULL))
+					.isInstanceOf(CustomException.class)
+					.hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_CANCEL_AMOUNT);
 			}
 		}
 	}
